@@ -471,12 +471,16 @@ class PlaylistWrapper(NeteaseMusic):
         '''
         tracks = self.try_playlist_detail(pl_id_src)
         if tracks is None: return False
-        if tracks:
-            tracks = sorted_tracks_by_ar(tracks)
-            for track in tracks:
-                b = self.try_manipulate_tracks(u'add', pl_id_dst, track.track_id)
-                if not b: return False
+        return self.append_tracks(tracks,pl_id_dst)
+
+
+    def append_tracks(self, tracks, pl_id_dst):
+        tracks = sorted_tracks_by_ar(tracks)
+        for track in tracks:
+            b = self.try_manipulate_tracks(u'add', pl_id_dst, track.track_id)
+            if not b: return False
         return True
+
 
     def copy(self, pl_id_src, pl_id_dst):
         '''
