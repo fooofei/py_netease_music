@@ -24,7 +24,7 @@ Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，其全部
 
 * 支持的 NeteaseAPI 调用
 
-见 class NeteaseMusic
+见 `class NeteaseMusic`
 
 * 辅助 io 输入输出脚本
 
