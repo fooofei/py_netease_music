@@ -542,35 +542,9 @@ class PlaylistWrapper(NeteaseMusic):
 def entry():
     from io_in_out import io_print
 
-    playlist_id_my_fav = u'1341800'
-    my_119 = u'582863488'
-    pl_id_post_rock = u'518892849'
-    pl_id_not_like = u'747383333'
-    my_netease_uid = u'1104001'
-
     ins = PlaylistWrapper()
 
-    if 0:
 
-        tasks = [
-            u'511476032',
-            u'503600403',
-        ]
-
-        for i, this in enumerate(tasks):
-            b = ins.append(this, my_119)
-            if b: b = ins.drop(this)
-            if not b: break
-            su = u'{} 操作成功'.format(i)
-            fa = u'{} 操作失败'.format(i)
-            io_print(su if b else fa)
-
-        b = ins.sorted_by_tracks_ar(my_119)
-        io_print(u'总操作成功' if b else u'总操作失败')
-
-    b = ins.sorted_by_tracks_ar(my_119)
-
-    io_print(u'总操作成功' if b else u'总操作失败')
 
 
 if __name__ == '__main__':
