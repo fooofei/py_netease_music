@@ -16,4 +16,17 @@ Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，其全部
 4、大量歌曲批量归类到以音乐人命名的歌单。
 
 
+# 使用
+
+*　脚本用户登录方式
+
+使用浏览器的 Cookies ，因此使用脚本前先确保曾经使用 Chrome 网页登陆成功过网易云。
+
+* 支持的 NeteaseAPI 调用
+
+见 class NeteaseMusic
+
+* 辅助 io 输入输出脚本
+
+见 https://github.com/fooofei/py_pieces/blob/master/io_in_out.py
 
