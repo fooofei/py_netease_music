@@ -157,6 +157,13 @@ def sorted_tracks_by_ar(tracks):
     return tracks
 
 
+def sorted_tracks_by_name(tracks):
+    from operator import attrgetter
+    tracks.sort(key=attrgetter('track_name', 'format_track_ar'),
+                reverse=True)
+    return tracks
+
+
 class NeteasePlaylist(namedtuple('NeteasePlaylist', ['pl_id', 'pl_name', 'pl_track_count',
                                                      'pl_tracks', 'pl_update_time',
                                                      'pl_track_update_time'])):
@@ -258,15 +265,19 @@ class NeteaseMusic(object):
             except requests.exceptions.RequestException as er:
                 io_stderr_print(u'exception:{}'.format(er))
                 continue
-
+            # 502 已经存在
+            # 400 失败
             if a and (a.ok or a.code == 502):
                 return a
+            if a and a.code == 400:
+                io_stderr_print(u'错误是 {}'.format(json.dumps(a, ensure_ascii=False)))
+                return None
 
             # code:405 操作太频繁
             #
             if (a and a.code == 405) or (loop % 10 == 0):
                 # 标准休眠时间是 80s
-                io_stderr_print(u'重试 {} 次, 遇到错误，休眠 40s , 错误是 {}'.format(loop, a))
+                io_stderr_print(u'重试 {} 次, 遇到错误，休眠 40s , 错误是 {}'.format(loop, json.dumps(a,ensure_ascii=False)))
                 time.sleep(40)
         return None
 
@@ -442,7 +453,7 @@ class PlaylistWrapper(NeteaseMusic):
     all methods return True/False  None/object_instance
     '''
 
-    def sorted_by_tracks_ar(self, pl_id):
+    def _sorted_tracks(self, method_sort, pl_id):
         '''
         sort tracks in pl_id playlist
         '''
@@ -451,7 +462,7 @@ class PlaylistWrapper(NeteaseMusic):
         if tracks:
             backup = self.try_create_playlist(u'python_backup')
             if backup is None: return False
-            tracks = sorted_tracks_by_ar(tracks)
+            tracks = method_sort(tracks)
             for track in tracks:
                 b = self.try_manipulate_tracks(u'add', backup.pl_id, track.track_id)
                 if not b: return False
@@ -465,14 +476,19 @@ class PlaylistWrapper(NeteaseMusic):
             self.drop(backup.pl_id)
         return True
 
+    def sorted_by_tracks_ar(self, pl_id):
+        return self._sorted_tracks(sorted_tracks_by_ar, pl_id)
+
+    def sorted_by_tracks_name(self, pl_id):
+        return self._sorted_tracks(sorted_tracks_by_name, pl_id)
+
     def append(self, pl_id_src, pl_id_dst):
         '''
         append all tracks in pl_id_src to pl_id_dst
         '''
         tracks = self.try_playlist_detail(pl_id_src)
         if tracks is None: return False
-        return self.append_tracks(tracks,pl_id_dst)
-
+        return self.append_tracks(tracks, pl_id_dst)
 
     def append_tracks(self, tracks, pl_id_dst):
         tracks = sorted_tracks_by_ar(tracks)
@@ -480,7 +496,6 @@ class PlaylistWrapper(NeteaseMusic):
             b = self.try_manipulate_tracks(u'add', pl_id_dst, track.track_id)
             if not b: return False
         return True
-
 
     def copy(self, pl_id_src, pl_id_dst):
         '''
@@ -543,12 +558,17 @@ class PlaylistWrapper(NeteaseMusic):
                                            )
 
 
+    def create_zero_width_name_playlist(self):
+        '''
+        create playlist with no name, just like in http://music.163.com/#/playlist?id=748829802
+        '''
+        n = u'&#8205;' # or  u'&zwj;'
+        return self.try_create_playlist(n)
+
 def entry():
     from io_in_out import io_print
 
     ins = PlaylistWrapper()
-
-
 
 
 if __name__ == '__main__':
