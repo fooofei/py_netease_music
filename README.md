@@ -1,4 +1,5 @@
-﻿
+#**Python NetEase Music Playlist Helper**
+
 # 功能说明
 
 Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，其全部侧重点在高质量音乐下载、网易云官方歌曲排行榜歌单收听等。
@@ -20,7 +21,7 @@ Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，其全部
 
 # 使用
 
-* 脚本用户登录方式
+### 脚本用户登录方式
 
 使用浏览器的 Cookies ，因此使用脚本前先确保曾经使用 Chrome 网页登陆成功过网易云。
 
@@ -30,11 +31,11 @@ Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，其全部
 
 笔者自己的账户就是通过微博登陆网易云，未有手机绑定，也就不存在手机号登陆的方式，此方式无效，只能使用 Cookies。
 
-* 支持的 NeteaseAPI 调用
+### 支持的 NeteaseAPI 调用
 
 见 `class NeteaseMusic`
 
-* 歌单、音乐在网易云中的标识
+### 歌单、音乐在网易云中的标识
 
 歌单、音乐都通过 id 来标识，通过网页可轻易查看：
 
@@ -44,14 +45,14 @@ Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，其全部
 
 id 为通过网易云 API 访问、修改歌单数据的凭证。
 
-* `io_in_out.py` in `netease.py`
+### `io_in_out.py` in `netease.py`
 
-见 https://github.com/fooofei/py_pieces/blob/master/io_in_out.py
+见 `https://github.com/fooofei/py_pieces/blob/master/io_in_out.py`
 
 # 实现需求
 
-* 歌单内歌曲排序
-```
+## 歌单内歌曲排序
+
 未发现网易云 API 对歌单排序的功能，且排序可用的客户端有 Windows 客户端、Android 手机端、iOS 手机端可用，
 不可用的有 Mac 端，Web 端。曲折实现对音乐排序对需求，如下，
 如对已存在歌单 a 进行音乐排序，实现过程：
@@ -64,11 +65,9 @@ id 为通过网易云 API 访问、修改歌单数据的凭证。
 
 此实现方式保留了原有歌单，原有歌单的播放次数，订阅人都会保留。
 
-```
 
-* 多个歌单之间音乐去重复
+### 多个歌单之间音乐去重复
 
-```
+
 如有大歌单 A ，集结音乐 500 首，还有小歌单 b,c,d ，可以实现从大歌单 A 中删除小歌单 b,c,d 中已经有的音乐。
 实现较为简单，获取所有歌单中的音乐列表，在本地处理，找到重复的音乐，然后将重复的音乐从大歌单 A 中删除即可。
-```
