@@ -35,6 +35,20 @@ Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，其全部
 
 见 `class NeteaseMusic`
 
+base_url = 'http://music.163.com/weapi'
+
+/user/playlist 获取用户所有歌单
+
+/v3/playlist/detail 指定歌单内的所有音乐
+
+/playlist/manipulate/tracks 维护指定歌单，添加删除音乐
+
+/playlist/create 新建歌单
+
+/playlist/delete 删除歌单
+
+在以上 API 的基础上进行组装，实现更高级的需求，如歌单内音乐排序。
+
 ### 歌单、音乐在网易云中的标识
 
 歌单、音乐都通过 id 来标识，通过网页可轻易查看：
