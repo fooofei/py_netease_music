@@ -1,4 +1,4 @@
-#**Python NetEase Music Playlist Helper**
+# **Python NetEase Music Playlist Helper**
 
 # 功能说明
 
