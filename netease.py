@@ -455,7 +455,7 @@ class PlaylistWrapper(NeteaseMusic):
 
     def _sorted_tracks(self, method_sort, pl_id):
         '''
-        sort tracks in pl_id playlist
+        sort tracks(songs) in pl_id playlist
         '''
         tracks = self.try_playlist_detail(pl_id)
         if tracks is None: return False
@@ -477,9 +477,15 @@ class PlaylistWrapper(NeteaseMusic):
         return True
 
     def sorted_by_tracks_ar(self, pl_id):
+        '''
+        sort first by songs artists, second by songs name
+        '''
         return self._sorted_tracks(sorted_tracks_by_ar, pl_id)
 
     def sorted_by_tracks_name(self, pl_id):
+        '''
+        sort first by songs name, second by songs artists
+        '''
         return self._sorted_tracks(sorted_tracks_by_name, pl_id)
 
     def append(self, pl_id_src, pl_id_dst):
@@ -500,6 +506,9 @@ class PlaylistWrapper(NeteaseMusic):
     def copy(self, pl_id_src, pl_id_dst):
         '''
         make the pl_id_dst same with pl_id_src
+
+        1 clear the dst
+        2 copy the src to dst
         '''
         b = self.clear(pl_id_dst)
         if not b: return False
