@@ -252,6 +252,11 @@ class NeteaseMusic(object):
         return res
 
     def _netease_try_api_framework(self, func_to_try, *args, **kwargs):
+        '''
+        20170621 受版权保护的音乐 无法播放 无法添加收藏 比如 http://music.163.com/#/song?id=390657
+        这样的音乐无法被添加到歌单 返回错误 code=401
+        :return:
+        '''
         import time
         from io_in_out import io_stderr_print
 
@@ -267,7 +272,8 @@ class NeteaseMusic(object):
                 continue
             # 502 已经存在
             # 400 失败
-            if a and (a.ok or a.code == 502):
+            # 401 无法操作，原因可能是受版权保护
+            if a and (a.ok or a.code == 502 or a.code == 401):
                 return a
             if a and a.code == 400:
                 io_stderr_print(u'错误是 {}'.format(json.dumps(a, ensure_ascii=False)))
@@ -277,11 +283,11 @@ class NeteaseMusic(object):
             #
             if (a and a.code == 405) or (loop % 10 == 0):
                 # 标准休眠时间是 80s
-                io_stderr_print(u'重试 {} 次, 遇到错误，休眠 40s , 错误是 {}'.format(loop, json.dumps(a,ensure_ascii=False)))
+                io_stderr_print(u'重试 {} 次, 遇到错误，休眠 40s , 错误是 {}'.format(loop, json.dumps(a, ensure_ascii=False)))
                 time.sleep(40)
         return None
 
-    def user_playlists(self, uid):
+    def _user_playlists(self, uid):
         # tick_func(self.my_playlist.__name__)
 
         enc_params = {u'offset': u'0',
@@ -302,7 +308,7 @@ class NeteaseMusic(object):
 
     def try_user_playlists(self, uid):
 
-        back = self._netease_try_api_framework(self.user_playlists, uid)
+        back = self._netease_try_api_framework(self._user_playlists, uid)
         if back and back.ok:
             assert (back.get(u'more', True) == False)
             playlists = back.get(u'playlist')
@@ -313,8 +319,8 @@ class NeteaseMusic(object):
             return r
         return None
 
-    def playlist_detail(self, playlist_id):
-        # tick_func(self.playlist_detail.__name__)
+    def _playlist_detail(self, playlist_id):
+        # tick_func(self._playlist_detail.__name__)
 
         p = {u'id': playlist_id,
              u'offset': 0,
@@ -334,7 +340,7 @@ class NeteaseMusic(object):
 
     def try_playlist_detail(self, playlist_id):
         back = self._netease_try_api_framework(
-            self.playlist_detail,
+            self._playlist_detail,
             playlist_id
         )
         if back and back.ok:
@@ -346,14 +352,14 @@ class NeteaseMusic(object):
             return r
         return None
 
-    def manipulate_tracks(self, op, playlist_id, song_id):
+    def _manipulate_tracks(self, op, playlist_id, song_id):
         '''
         第二次添加同一个 song ,返回 code=502
 
         这个 song id=5043818 有非常大的几率失败
 
         '''
-        # tick_func(self.manipulate_tracks.__name__)
+        # tick_func(self._manipulate_tracks.__name__)
 
         p = {
             u'op': op,
@@ -372,19 +378,20 @@ class NeteaseMusic(object):
 
     def try_manipulate_tracks(self, op, playlist_id, song_id):
 
-        a = self._netease_try_api_framework(self.manipulate_tracks,
+        a = self._netease_try_api_framework(self._manipulate_tracks,
                                             op, playlist_id, song_id)
 
+        # 添加已经存在的音乐 返回 code=502， 这里应该返回 a 实例，复合预期
         if a and (a.ok or a.code == 502):
             return a
         return None
 
-    def create_playlist(self, name):
+    def _create_playlist(self, name):
         '''
         即使同名也能创建成功  一定能创建成功
         如果遇到无效名字，比如 1989.6.4 那么会有默认名字代替
         '''
-        # tick_func(self.create_playlist.__name__)
+        # tick_func(self._create_playlist.__name__)
 
         p = {u'name': name}
         res = self._post(path=u'/playlist/create'
@@ -398,14 +405,14 @@ class NeteaseMusic(object):
 
     def try_create_playlist(self, name):
 
-        a = self._netease_try_api_framework(self.create_playlist, name)
+        a = self._netease_try_api_framework(self._create_playlist, name)
         if a and a.ok:
             return NeteasePlaylist._from(
                 a.get(u'playlist')
             )
         return None
 
-    def delete_playlist(self, playlist_id):
+    def _delete_playlist(self, playlist_id):
         '''
         json such as :
             '{"code":200,"id":745231153}'
@@ -413,7 +420,7 @@ class NeteaseMusic(object):
         多次删除同一个 playlist_id ，都一直删除成功
         查看自己歌单列表没有这个歌单 但是通过拼凑 url 是可以看到这个歌单的
         '''
-        # tick_func(self.delete_playlist.__name__)
+        # tick_func(self._delete_playlist.__name__)
         p = {u'pid': playlist_id}
         res = self._post(path=u'/playlist/delete'
                          , params={}
@@ -426,7 +433,7 @@ class NeteaseMusic(object):
     def try_delete_playlist(self, playlist_id):
 
         a = self._netease_try_api_framework(
-            self.delete_playlist,
+            self._delete_playlist,
             playlist_id
         )
         if a and a.ok:
@@ -463,9 +470,16 @@ class PlaylistWrapper(NeteaseMusic):
             backup = self.try_create_playlist(u'python_backup')
             if backup is None: return False
             tracks = method_sort(tracks)
+            tracks_success = []
             for track in tracks:
                 b = self.try_manipulate_tracks(u'add', backup.pl_id, track.track_id)
-                if not b: return False
+                if b is not None:  tracks_success.append(track)
+                else : print('fail manipulate track, track_id={0} play_list={1}'
+                             .format(track.track_id, backup.pl_id))
+
+            # 还好这里没用 clear()，因为不能直接 clear()，可能存在转移失败的音乐，
+            # 失败的音乐就继续存在原歌单，不要移动
+            tracks = tracks_success
             for track in tracks:
                 b = self.try_manipulate_tracks(u'del', pl_id, track.track_id)
                 if not b: return False
@@ -566,13 +580,13 @@ class PlaylistWrapper(NeteaseMusic):
                                            track.track_id
                                            )
 
-
     def create_zero_width_name_playlist(self):
         '''
         create playlist with no name, just like in http://music.163.com/#/playlist?id=748829802
         '''
-        n = u'&#8205;' # or  u'&zwj;'
+        n = u'&#8205;'  # or  u'&zwj;'
         return self.try_create_playlist(n)
+
 
 def entry():
     from io_in_out import io_print
