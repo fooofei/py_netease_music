@@ -2,7 +2,7 @@
 
 # 功能说明
 
-Github 有许多 NeteaseMusic 的脚本或其他书写的 API 调用，
+Github 其他 NeteaseMusic 的脚本或其他书写的 API 调用，
 
 其全部侧重点在高质量音乐下载、网易云官方歌曲排行榜歌单收听等。
 
@@ -62,10 +62,6 @@ base_url = 'http://music.163.com/weapi'
 音乐 id ：浏览器地址栏，如 http://music.163.com/#/song?id=446512356 这样的地址，id 后的数字即为此歌曲的 id
 
 id 为通过网易云 API 访问、修改歌单数据的凭证。
-
-##### `io_in_out.py` in `netease.py`
-
-见 `https://github.com/fooofei/py_pieces/blob/master/io_in_out.py`
 
 # 实现需求
 
